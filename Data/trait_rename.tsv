@@ -1,0 +1,19 @@
+
+OLD	NEW	Class
+TXSScan.bacteria.diderm.T1SS	T1SS	t
+TXSScan.bacteria.diderm.T3SS	T3SS	t
+TXSScan.bacteria.diderm.T4aP	T4aPSS	t
+TXSScan.bacteria.diderm.T4bP	T4bPSS	t
+TXSScan.bacteria.diderm.T5aSS	T5aPSS	t
+TXSScan.bacteria.diderm.T5bSS	T5bPSS	t
+TXSScan.bacteria.diderm.T5cSS	T5cPSS	t
+TXSScan.bacteria.diderm.T6SSi	T6SSi	t
+TXSScan.bacteria.diderm.pT4SSi	T4SSi	t
+TXSScan.bacteria.diderm.pT4SSt	T4SSt	t
+APH_3__.Ia	APH(3').Ia	a
+APH_3___.Ib	APH(3'').Ib	a
+APH_3__.IIa	APH(3').IIa	a
+APH_6_.Id	APH(6).Id	a
+CRP	crp	a
+Klebsiella_pneumoniae_KpnH	Kpne_KpnH	a
+oqxB	oqxB	a
