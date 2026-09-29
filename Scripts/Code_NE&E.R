@@ -2363,3 +2363,85 @@ contrasts <- contrast(
 )
 
 summary(contrasts)        
+#----Rarefraccion----
+pantoea <- data.frame(
+  agglomerans = c(33, 35, 7, 28, 57, 78, 48),
+  ananatis = c(2, 0, 2, 0, 0, 0, 0),
+  pleuroti = c(0, 0, 0, 0, 1, 1, 1),
+  allii = c(0, 1, 1, 0, 1, 0, 0),
+  vagans = c(5, 2, 0, 4, 7, 2, 2),
+  beijingensis = c(1, 0, 0, 0, 0, 0, 0),
+  rodasii = c(1, 0, 0, 0, 0, 0, 0)
+)          
+rownames(pantoea) <- c(
+  "Aegilops tauschii",
+  "T. monococcum",
+  "T. turgidum",
+  "T. dicoccum",
+  "T. durum",
+  "T. aestivum",
+  "T. spelta"
+)
+
+observed_richness <- specnumber(pantoea)
+observed_richness
+
+rare_12 <- rarefy(pantoea, sample = 12)
+rare_12
+
+results <- data.frame(
+  Host = rownames(pantoea),
+  Total_isolates = rowSums(pantoea),
+  Observed_species = observed_richness,
+  Rarefied_species_12 = as.numeric(rare_12)
+)
+results
+
+rare_curves <- rarecurve(
+  pantoea,
+  step = 1,
+  sample = 12,
+  label = TRUE #Poner FALSE si no las quiero
+)
+rare_df <- map_dfr(
+  rownames(pantoea),
+  function(host) {
+    
+    max_n <- sum(pantoea[host, ])
+    
+    data.frame(
+      Host = host,
+      Isolates = 1:max_n,
+      Species = as.numeric(
+        rarefy(
+          pantoea[host, , drop = FALSE],
+          sample = 1:max_n
+        )
+      )
+    )
+  }
+)
+p<-ggplot(
+  rare_df,
+  aes(
+    x = Isolates,
+    y = Species,
+    color = Host
+  )
+) +
+  geom_line(linewidth = 0.8) +
+  theme_bw(
+    base_size = 8,
+    base_family = "Helvetica"
+  ) +
+  labs(
+    x = "Number of Pantoea isolates",
+    y = "Species richness",
+    color = "Wheat host"
+  ) +
+  theme(
+    axis.title = element_text(face = "bold"),
+    axis.text = element_text(color = "black"),
+    panel.grid.minor = element_blank()
+  )
+
