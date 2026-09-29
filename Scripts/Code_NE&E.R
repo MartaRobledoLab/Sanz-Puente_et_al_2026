@@ -1992,4 +1992,374 @@ p_seg <- ggplot(seg_window_df, aes(x = Midpoint / 1000, y = Seg_fraction, color 
 
 p_seg
 
+#----Cotiledones----
+                                            file <- "COTILEDONES_ISP.xlsx"
+sheets <- excel_sheets(file)
+read_cotyledon_sheet <- function(sheet_name) {
+  
+  day <- str_extract(sheet_name, "\\d+") |> as.integer()
+  
+  read_excel(
+    file,
+    sheet = sheet_name,
+    skip = 1
+  ) %>%
+    rename(
+      genotype = 1,
+      replicate = 2
+    ) %>%
+    pivot_longer(
+      cols = -c(genotype, replicate),
+      names_to = "strain",
+      values_to = "cotyledons"
+    ) %>%
+    mutate(
+      day = day
+    )
+}
 
+
+cotyledons <- map_dfr(
+  sheets,
+  read_cotyledon_sheet
+)
+strain_info <- tibble(
+  strain = c(
+    "C396", "C8", "C88",
+    "C136", "C5", "C21",
+    "C385", "C143", "C360"
+  ),
+  cluster = c(
+    "C1", "C1", "C1",
+    "C2", "C2", "C2",
+    "C3", "C3", "C3"
+  )
+)
+
+
+cotyledons <- cotyledons %>%
+  mutate(
+    strain = recode(
+      strain,
+      "C121" = "C21"
+    )
+  ) %>%
+  left_join(
+    strain_info,
+    by = "strain"
+  )
+cotyledons <- cotyledons %>%
+  mutate(
+    treatment = case_when(
+      strain == "PBS" ~ "Control",
+      strain == "C79" ~ "C79",
+      cluster == "C1" ~ "C1",
+      cluster == "C2" ~ "C2",
+      cluster == "C3" ~ "C3",
+      TRUE ~ NA_character_
+    )
+  )
+summary_cotyledons <- cotyledons %>%
+  filter(!is.na(treatment)) %>%
+  group_by(genotype, treatment, day) %>%
+  summarise(
+    mean = mean(cotyledons, na.rm = TRUE),
+    se = sd(cotyledons, na.rm = TRUE) /
+      sqrt(sum(!is.na(cotyledons))),
+    n = sum(!is.na(cotyledons)),
+    .groups = "drop"
+  )
+my_colors <- c(
+  "Control" = "black",
+  "C79" = "grey",
+  "C1" = "#F4C56A",
+  "C2" = "#4C72B0",
+  "C3" = "#D65F4A"
+)
+
+
+p_cotyledons <- ggplot(
+  summary_cotyledons,
+  aes(
+    x = day,
+    y = mean,
+    color = treatment,
+    group = treatment
+  )
+) +
+  geom_line(linewidth = 0.5) +
+  geom_errorbar(
+    aes(
+      ymin = mean - se,
+      ymax = mean + se
+    ),
+    width = 0.25,
+    linewidth = 0.35
+  ) +
+  scale_color_manual(
+    values = my_colors
+  ) +
+  facet_wrap(
+    ~ genotype,
+    ncol = 1
+  ) +
+  scale_x_continuous(
+    breaks = c(2, 5, 7, 9, 12)
+  ) +
+  scale_y_continuous(
+    limits = c(0, 12),
+    breaks = seq(0, 12, 2)
+  ) +
+  theme_bw(
+    base_size = 7,
+    base_family = "Helvetica"
+  ) +
+  theme(
+    strip.background = element_blank(),
+    strip.text = element_text(
+      face = "bold",
+      size = 7
+    ),
+    axis.title = element_text(
+      face = "bold",
+      size = 7
+    ),
+    axis.text = element_text(
+      color = "black",
+      size = 7
+    ),
+    legend.position = "right",
+    legend.title = element_text(
+      face = "bold",
+      size = 7
+    ),
+    legend.text = element_text(
+      size = 7
+    ),
+    panel.spacing = unit(
+      0.15,
+      "cm"
+    ),
+    panel.grid.major = element_line(
+      color = "grey90",
+      linewidth = 0.2
+    ),
+    panel.grid.minor = element_blank()
+  ) +
+  labs(
+    x = "Days post inoculation",
+    y = "Cotyledon-bearing seedlings",
+    color = "Treatment"
+  )
+
+
+p_cotyledons
+cotyledon_stats <- cotyledons %>%
+  filter(!is.na(treatment)) %>%
+  mutate(
+    treatment = factor(
+      treatment,
+      levels = c(
+        "Control",
+        "C79",
+        "C1",
+        "C2",
+        "C3"
+      )
+    ),
+    day = as.numeric(day)
+  )
+model_cotyledons <- lmer(
+  cotyledons ~ treatment * day * genotype + (1 | strain),
+  data = cotyledon_stats
+)
+anova(model_cotyledons)
+emm_cotyledons <- emmeans(
+  model_cotyledons,
+  ~ treatment | genotype * day
+)
+contrasts_cotyledons <- contrast(
+  emm_cotyledons,
+  method = "trt.vs.ctrl",
+  ref = "Control",
+  adjust = "holm"
+)
+summary(contrasts_cotyledons)
+#----germination----
+file <- "GERMINACIÓN_ISP.xlsx"
+sheets <- excel_sheets(file)
+read_germination_sheet <- function(sheet_name) {
+  
+  day <- str_extract(sheet_name, "\\d+") |> as.integer()
+  
+  read_excel(
+    file,
+    sheet = sheet_name,
+    skip = 1
+  ) %>%
+    rename(
+      genotype = 1,
+      replicate = 2
+    ) %>%
+    pivot_longer(
+      cols = -c(genotype, replicate),
+      names_to = "strain",
+      values_to = "germinated"
+    ) %>%
+    mutate(
+      day = day
+    )
+}
+
+germination_new <- map_dfr(
+  sheets,
+  read_germination_sheet
+)
+strain_info <- tibble(
+  strain = c(
+    "C396", "C8", "C88",
+    "C136", "C5", "C121",
+    "C385", "C143", "C360"
+  ),
+  cluster = c(
+    "C1", "C1", "C1",
+    "C2", "C2", "C2",
+    "C3", "C3", "C3"
+  )
+)
+
+germination_new <- germination_new %>%
+  mutate(
+    strain = recode(
+      strain,
+      "C121" = "C21"
+    )
+  ) %>%
+  left_join(strain_info, by = "strain")
+strain_info <- tibble(
+  strain = c(
+    "C396", "C8", "C88",
+    "C136", "C5", "C21",
+    "C385", "C143", "C360"
+  ),
+  cluster = c(
+    "C1", "C1", "C1",
+    "C2", "C2", "C2",
+    "C3", "C3", "C3"
+  )
+)
+
+# Read all data and assign clusters
+germination_new <- map_dfr(
+  sheets,
+  read_germination_sheet
+) %>%
+  mutate(
+    strain = recode(strain, "C121" = "C21")
+  ) %>%
+  left_join(strain_info, by = "strain") %>%
+  mutate(
+    treatment = case_when(
+      strain == "PBS" ~ "Control",
+      strain == "C79" ~ "C79",
+      cluster == "C1" ~ "C1",
+      cluster == "C2" ~ "C2",
+      cluster == "C3" ~ "C3",
+      TRUE ~ NA_character_
+    )
+  )
+summary_germination <- germination_new %>%
+  filter(!is.na(treatment)) %>%
+  group_by(genotype, treatment, day) %>%
+  summarise(
+    mean = mean(germinated, na.rm = TRUE),
+    se = sd(germinated, na.rm = TRUE) / sqrt(sum(!is.na(germinated))),
+    n = sum(!is.na(germinated)),
+    .groups = "drop"
+  )
+my_colors <- c(
+  "Control" = "black",
+  "C79" = "grey",
+  "C1" = "#F4C56A",
+  "C2" = "#4C72B0",
+  "C3" = "#D65F4A"
+)
+p_germination <- ggplot(
+  summary_germination,
+  aes(
+    x = day,
+    y = mean,
+    color = treatment,
+    group = treatment
+  )
+) +
+  geom_line(linewidth = 0.5) +
+  geom_errorbar(
+    aes(
+      ymin = mean - se,
+      ymax = mean + se
+    ),
+    width = 0.25,
+    linewidth = 0.35
+  ) +
+  scale_color_manual(values = my_colors) +
+  facet_wrap(~ genotype, ncol = 1) +
+  scale_x_continuous(
+    breaks = c(2, 5, 7, 9, 12)
+  ) +
+  scale_y_continuous(
+    limits = c(0, 12),
+    breaks = seq(0, 12, 2)
+  ) +
+  theme_bw(
+    base_size = 7,
+    base_family = "Helvetica"
+  ) +
+  theme(
+    strip.background = element_blank(),
+    strip.text = element_text(face = "bold", size = 7),
+    axis.title = element_text(face = "bold", size = 7),
+    axis.text = element_text(color = "black", size = 7),
+    legend.position = "right",
+    legend.title = element_text(face = "bold", size = 7),
+    legend.text = element_text(size = 7),
+    panel.spacing = unit(0.15, "cm"),
+    panel.grid.major = element_line(
+      color = "grey90",
+      linewidth = 0.2
+    ),
+    panel.grid.minor = element_blank()
+  ) +
+  labs(
+    x = "Days post inoculation",
+    y = "Germinated seeds",
+    color = "Treatment"
+  )
+
+p_germination
+germination_stats <- germination_new %>%
+  filter(!is.na(treatment)) %>%
+  mutate(
+    treatment = factor(treatment,
+                       levels = c("Control", "C79", "C1", "C2", "C3")),
+    day = as.numeric(day)
+  )
+model <- lmer(
+  germinated ~ treatment * day * genotype + (1 | strain),
+  data = germination_stats
+)
+
+anova(model)
+emm <- emmeans(
+  model,
+  ~ treatment | genotype * day
+)
+
+contrasts <- contrast(
+  emm,
+  method = "trt.vs.ctrl",
+  ref = "Control",
+  adjust = "holm"
+)
+
+summary(contrasts)        
