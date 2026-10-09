@@ -2444,4 +2444,745 @@ p<-ggplot(
     axis.text = element_text(color = "black"),
     panel.grid.minor = element_blank()
   )
+#----mapa----
+file <- "C:/Users/ipuente/Desktop/02_PaggPan/Spain_Collection_Sites.xlsx"
+dat <- read_excel(file)
+dat <- dat %>%
+  mutate(
+    Cluster = str_trim(as.character(Cluster)),
+    Host_Species = str_trim(as.character(Host_Species)),
+    latitude = as.numeric(
+      str_extract(
+        Original_Regeneration_plot_coordinates,
+        "^-?[0-9]+\\.?[0-9]*"
+      )
+    ),
+    longitude = as.numeric(
+      str_extract(
+        Original_Regeneration_plot_coordinates,
+        "(?<=, )-?[0-9]+\\.?[0-9]*"
+      )
+    ),
+    C1 = as.numeric(C1),
+    C2 = as.numeric(C2),
+    C3 = as.numeric(C3)
+  )
+
+print(
+  dat %>%
+    select(
+      Regeneration_site,
+      Strain_ID,
+      Original_Regeneration_plot_coordinates,
+      longitude,
+      latitude
+    )
+)
+
+cluster_colors <- c(
+  "C1" = "#4C72B0",
+  "C2" = "#F4C56A",
+  "C3" = "#D65F4A"
+)
+
+host_levels <- sort(unique(dat$Host_Species))
+
+host_colors <- scales::hue_pal()(
+  length(host_levels)
+)
+
+names(host_colors) <- host_levels
+
+print(host_colors)
+
+donuts <- dat %>%
+  select(
+    Regeneration_site,
+    Strain_ID,
+    Host_Species,
+    Cluster,
+    longitude,
+    latitude,
+    C1,
+    C2,
+    C3
+  ) %>%
+  mutate(
+    total = C1 + C2 + C3
+  )
+
+host_points <- dat %>%
+  select(
+    Regeneration_site,
+    Host_Species,
+    longitude,
+    latitude
+  ) %>%
+  distinct()
+
+world <- map_data("world")
+municipios <- gadm(
+  country = "ESP",
+  level = 3,
+  path = tempdir()
+)
+municipios <- st_as_sf(municipios)
+municipios_zoom <- municipios %>%
+  filter(
+    NAME_1 %in% c("Asturias", "Castilla y Leon")
+  )
+
+comunidades <- gadm(
+  country = "ESP",
+  level = 1,
+  path = tempdir()
+) %>%
+  st_as_sf()
+
+place_labels <- tibble(
+  place = c(
+    "Gijón",
+    "Villaviciosa",
+    "Pravia",
+    "Villaornate",
+    "Matanza de los Oteros",
+    "Valdespino"
+  ),
+  longitude = c(
+    -5.6628,
+    -5.4356,
+    -6.11,       # aproximado
+    -5.5497,
+    -5.3761,
+    -5.38        # aproximado; ajustar si quieres
+  ),
+  latitude = c(
+    43.5449,
+    43.4817,
+    43.49,       # aproximado
+    42.1847,
+    42.2403,
+    42.24        # aproximado; ajustar si quieres
+  )
+)
+
+sample_points <- dat %>%
+  select(
+    Sample_name,
+    Reg,
+    Original_Regeneration_plot_coordinates
+  ) %>%
+  distinct() %>%
+  mutate(
+    # Normalizar posibles guiones
+    coordinates = str_replace_all(
+      Original_Regeneration_plot_coordinates,
+      "−|–|—",
+      "-"
+    ),
+    
+    latitude = as.numeric(
+      str_extract(
+        coordinates,
+        "^-?[0-9]+\\.?[0-9]*"
+      )
+    ),
+    
+    longitude = as.numeric(
+      str_extract(
+        coordinates,
+        "(?<=, )-?[0-9]+\\.?[0-9]*"
+      )
+    )
+  )
+
+
+#######################################################################################
+
+# Comunidades autónomas
+comunidades <- gadm(
+  country = "ESP",
+  level = 1,
+  path = tempdir()
+) %>%
+  st_as_sf()
+
+# Municipios
+municipios <- gadm(
+  country = "ESP",
+  level = 3,
+  path = tempdir()
+) %>%
+  st_as_sf()
+
+# Solo Castilla y León
+municipios_cyl <- municipios %>%
+  filter(NAME_1 == "Castilla y Leon")
+
+
+
+sample_points <- dat %>%
+  select(
+    Sample_name,
+    Regeneration_site,
+    Original_Regeneration_plot_coordinates
+  ) %>%
+  distinct() %>%
+  mutate(
+    coordinates = str_replace_all(
+      Original_Regeneration_plot_coordinates,
+      "−|–|—",
+      "-"
+    ),
+    
+    latitude = as.numeric(
+      str_extract(
+        coordinates,
+        "^-?[0-9]+\\.?[0-9]*"
+      )
+    ),
+    
+    longitude = as.numeric(
+      str_extract(
+        coordinates,
+        "(?<=, )-?[0-9]+\\.?[0-9]*"
+      )
+    )
+  )
+
+
+
+donuts <- dat %>%
+  select(
+    Regeneration_site,
+    Sample_name,
+    Strain_ID,
+    Host_Species,
+    Cluster,
+    longitude,
+    latitude,
+    C1,
+    C2,
+    C3
+  ) %>%
+  mutate(
+    total = C1 + C2 + C3
+  )
+
+
+
+host_points <- dat %>%
+  select(
+    Regeneration_site,
+    Sample_name,
+    Host_Species,
+    longitude,
+    latitude
+  ) %>%
+  distinct()
+place_labels <- tibble(
+  place = c(
+    "Villaornate",
+    "Matanza de los Oteros",
+    "Valdespino"
+  ),
+  longitude = c(
+    -5.5497,
+    -5.3761,
+    -5.38
+  ),
+  latitude = c(
+    42.1847,
+    42.2403,
+    42.24
+  )
+)
+# Aquí desplazamos el donut y el nombre respecto al punto real.
+# Puedes modificar estos valores si quieres más/menos separación.
+
+sample_labels <- sample_points %>%
+  mutate(
+    label_longitude = longitude + 0.025,
+    label_latitude = latitude + 0.008
+  )
+# Los donuts se colocan en la misma posición desplazada
+donuts_labels <- donuts %>%
+  mutate(
+    label_longitude = longitude + 0.025,
+    label_latitude = latitude + 0.008
+  )
+cluster_colors <- c(
+  "C1" = "#F4C56A",
+  "C2" = "#4C72B0",
+  "C3" = "#D65F4A"
+)
+
+host_levels <- sort(unique(dat$Host_Species))
+
+host_colors <- scales::hue_pal()(length(host_levels))
+names(host_colors) <- host_levels
+world <- map_data("world")
+p_map_cyl <- ggplot() +
+geom_polygon(
+  data = world,
+  aes(
+    x = long,
+    y = lat,
+    group = group
+  ),
+  fill = "grey95",
+  color = "grey70",
+  linewidth = 0.25
+) +
+geom_sf(
+  data = comunidades %>%
+    filter(NAME_1 == "Castilla y Leon"),
+  fill = NA,
+  color = "grey25",
+  linewidth = 0.6,
+  inherit.aes = FALSE
+) +
+geom_sf(
+  data = municipios_cyl,
+  fill = NA,
+  color = "grey75",
+  linewidth = 0.18,
+  inherit.aes = FALSE
+) +
+geom_point(
+  data = place_labels,
+  aes(
+    x = longitude,
+    y = latitude
+  ),
+  shape = 21,
+  size = 1.5,
+  fill = "white",
+  color = "grey30",
+  stroke = 0.5
+) +
+geom_text_repel(
+  data = place_labels,
+  aes(
+    x = longitude,
+    y = latitude,
+    label = place
+  ),
+  size = 2.2,
+  color = "grey25",
+  box.padding = 0.25,
+  point.padding = 0.1,
+  min.segment.length = 0,
+  segment.color = "grey65",
+  max.overlaps = Inf
+) +
+geom_segment(
+  data = sample_labels,
+  aes(
+    x = longitude,
+    y = latitude,
+    xend = label_longitude,
+    yend = label_latitude
+  ),
+  color = "grey45",
+  linewidth = 0.35
+) +
+geom_scatterpie(
+  data = donuts_labels,
+  aes(
+    x = label_longitude,
+    y = label_latitude,
+    r = 0.015
+  ),
+  cols = c("C1", "C2", "C3"),
+  color = "white",
+  linewidth = 0.3
+) +
+  
+  scale_fill_manual(
+    values = cluster_colors,
+    name = "Genomic cluster"
+  ) +
+geom_text(
+  data = sample_labels,
+  aes(
+    x = label_longitude + 0.018,
+    y = label_latitude,
+    label = Sample_name
+  ),
+  size = 2.3,
+  color = "black",
+  fontface = "bold",
+  hjust = 0
+) +
+ggnewscale::new_scale_fill() +
+geom_point(
+  data = host_points,
+  aes(
+    x = longitude,
+    y = latitude,
+    fill = Host_Species
+  ),
+  shape = 21,
+  size = 1.4,
+  color = "black",
+  stroke = 0.3
+) +
+  
+  scale_fill_manual(
+    values = host_colors,
+    name = "Host species"
+  ) +
+coord_sf(
+  xlim = c(-5.8, -5.0),
+  ylim = c(42.10, 42.35),
+  expand = FALSE
+) +
+annotation_scale(
+  location = "bl",
+  width_hint = 0.25,
+  unit_category = "metric",
+  text_cex = 0.7
+) + 
+theme_void() +
+  
+  theme(
+    legend.position = "right",
+    
+    legend.title = element_text(
+      size = 9,
+      face = "bold"
+    ),
+    
+    legend.text = element_text(
+      size = 8
+    )
+  )
+
+p_map_cyl
+########################################################################################
+dat <- dat %>%
+  mutate(
+    latitude = as.numeric(
+      str_extract(coord, "^-?[0-9]+\\.?[0-9]*")
+    ),
+    longitude = as.numeric(
+      str_extract(
+        str_remove(coord, "^-?[0-9]+\\.?[0-9]*\\s*,\\s*"),
+        "^-?[0-9]+\\.?[0-9]*"
+      )
+    ),
+    Cluster = str_trim(as.character(Cluster)),
+    Host_Species = str_trim(as.character(Host_Species)),
+    C1 = as.numeric(C1),
+    C2 = as.numeric(C2),
+    C3 = as.numeric(C3)
+  )
+
+dat_ast <- dat %>%
+  filter(Regeneration_site %in% c("Site B", "Site K"))
+cluster_colors <- c(
+  "C1" = "#F4C56A",
+  "C2" = "#4C72B0",
+  "C3" = "#D65F4A"
+)
+
+host_levels <- sort(unique(dat$Host_Species))
+
+host_colors <- scales::hue_pal()(length(host_levels))
+names(host_colors) <- host_levels
+
+
+donuts_ast <- dat_ast %>%
+  select(
+    Regeneration_site,
+    Sample_name,
+    Host_Species,
+    Cluster,
+    longitude,
+    latitude,
+    C1,
+    C2,
+    C3
+  )
+
+
+host_points_ast <- dat_ast %>%
+  select(
+    Regeneration_site,
+    Host_Species,
+    longitude,
+    latitude
+  ) %>%
+  distinct()
+
+
+# Municipios
+municipios <- gadm(
+  country = "ESP",
+  level = 3,
+  path = tempdir()
+)
+
+municipios <- st_as_sf(municipios)
+
+municipios_ast <- municipios %>%
+  filter(NAME_1 == "Asturias")
+
+place_labels_ast <- tibble(
+  place = c(
+    "Pravia",
+    "Gijón",
+    "Villaviciosa"
+  ),
+  longitude = c(
+    -6.11,
+    -5.6628,
+    -5.4356
+  ),
+  latitude = c(
+    43.49,
+    43.5449,
+    43.4817
+  )
+)
+world <- map_data("world")
+# Mapa
+p_map_ast <- ggplot() +
+  geom_polygon(
+    data = world,
+    aes(
+      x = long,
+      y = lat,
+      group = group
+    ),
+    fill = "grey95",
+    color = "grey70",
+    linewidth = 0.25
+  ) +
+  # Fondo
+  geom_sf(
+    data = municipios_ast,
+    fill = "grey95",
+    color = "grey70",
+    linewidth = 0.25
+  ) +
+  
+  # Límites municipales
+  geom_sf(
+    data = municipios_ast,
+    fill = NA,
+    color = "grey40",
+    linewidth = 0.35
+  ) +
+  geom_point(
+    data = place_labels_ast,
+    aes(
+      x = longitude,
+      y = latitude
+    ),
+    shape = 21,
+    size = 2,
+    fill = "white",
+    color = "black",
+    stroke = 0.4
+  ) +
+  
+  geom_text(
+    data = place_labels_ast,
+    aes(
+      x = longitude,
+      y = latitude,
+      label = place
+    ),
+    nudge_y = 0.015,
+    size = 3,
+    color = "black"
+  ) +
+  # Donuts en las coordenadas REALES
+  geom_scatterpie(
+    data = donuts_ast,
+    aes(
+      x = longitude,
+      y = latitude,
+      r = 0.018
+    ),
+    cols = c("C1", "C2", "C3"),
+    color = "white",
+    linewidth = 0.25
+  ) +
+  
+  scale_fill_manual(
+    values = cluster_colors,
+    name = "Genomic cluster"
+  ) +
+  
+  ggnewscale::new_scale_fill() +
+  
+  # Punto del hospedador encima del donut
+  geom_point(
+    data = host_points_ast,
+    aes(
+      x = longitude,
+      y = latitude,
+      fill = Host_Species
+    ),
+    shape = 21,
+    size = 2.5,
+    color = "black",
+    stroke = 0.35
+  ) +
+  
+  scale_fill_manual(
+    values = host_colors,
+    name = "Host species"
+  ) +
+  
+  # Nombre del sample
+  geom_text(
+    data = dat_ast,
+    aes(
+      x = longitude + 0.025,
+      y = latitude,
+      label = Sample_name
+    ),
+    hjust = 0,
+    size = 3
+  ) +
+  
+  # Zoom Asturias
+  coord_sf(
+    xlim = c(-6.35, -5.25),
+    ylim = c(43.25, 43.65),
+    expand = FALSE
+  ) +
+  
+  # Escala
+  annotation_scale(
+    location = "bl",
+    width_hint = 0.25,
+    unit_category = "metric",
+    text_cex = 0.7
+  ) +
+  
+  theme_void() +
+  
+  theme(
+    legend.position = "right",
+    legend.title = element_text(size = 9),
+    legend.text = element_text(size = 8)
+  )
+
+p_map_ast
+
+place_labels_leon <- tibble(
+  place = c(
+    "Villaornate",
+    "Matanza de los Oteros",
+    "Valdespino Cerón",
+    "Valdemorilla",
+    "Valencia de Don Juan"
+  ),
+  
+  longitude = c(
+    -5.55,
+    -5.376,
+    -5.38,
+    -5.33,
+    -5.52019
+  ),
+  
+  latitude = c(
+    42.185,
+    42.240,
+    42.255,
+    42.25,
+    42.29380
+  )
+)
+p_pueblos_leon <- ggplot() +
+  
+  # España / fondo
+  geom_polygon(
+    data = world,
+    aes(
+      x = long,
+      y = lat,
+      group = group
+    ),
+    fill = "grey95",
+    color = "grey70",
+    linewidth = 0.25
+  ) +
+  
+  # Puntos de los pueblos
+  geom_point(
+    data = place_labels_leon,
+    aes(
+      x = longitude,
+      y = latitude
+    ),
+    shape = 21,
+    size = 2.5,
+    fill = "white",
+    color = "black",
+    stroke = 0.5
+  ) +
+  
+  # Nombres
+  geom_text(
+    data = place_labels_leon,
+    aes(
+      x = longitude,
+      y = latitude,
+      label = place
+    ),
+    nudge_y = 0.015,
+    size = 3.2,
+    color = "black"
+  ) +
+  
+  # Zoom para incluir todos los pueblos
+  coord_fixed(
+    xlim = c(-5.75, -5.15),
+    ylim = c(42.10, 42.38),
+    expand = FALSE
+  ) +
+  
+  # Escala
+  annotation_scale(
+    location = "bl",
+    width_hint = 0.25,
+    unit_category = "metric",
+    text_cex = 0.7
+  ) +
+  
+  theme_void()
+
+p_pueblos_leon
+p_spain <- ggplot() +
+  
+  geom_sf(
+    data = comunidades,
+    fill = "grey95",
+    color = "grey40",
+    linewidth = 0.4
+  ) +
+  
+  coord_sf(
+    xlim = c(-9.5, 4.5),
+    ylim = c(35.5, 44.5),
+    expand = FALSE
+  ) +
+  
+  annotation_scale(
+    location = "bl",
+    width_hint = 0.25,
+    unit_category = "metric",
+    text_cex = 0.8
+  ) +
+  
+  theme_void()
+
+p_spain
 
