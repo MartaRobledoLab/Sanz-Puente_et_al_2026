@@ -1,6 +1,6 @@
 ## Github Repository for
 # Seed transmission bottlenecks drive the emergence of a seed-specific bacterial lineage in wheat
-**by Irene Sanz-Puente, Santiago Redondo-Salvo, Natalia I. García- Tomsig, Gijs Selten, Arancha Peñil-Celis, Jorge Rodríguez Grande, Alain Ocampo-Sosa, Esther Menendez, Óscar Lorenzo, Ronnie de Jonge, Fernando de la Cruz, and Marta Robledo.**
+**by Irene Sanz-Puente1†, Santiago Redondo-Salvo1, Natalia I. García- Tomsig1, , Arancha Peñil-Celis1, Jorge Rodríguez Grande2,3, Gijs Selten4‡, Susana Fernandes 5,6, Andreas Börner7, Alain Ocampo-Sosa2,3, Esther Menendez5,6,7, Óscar Lorenzo5,6, Ronnie de Jonge4,9, Fernando de la Cruz 1*, and Marta Robledo1**
 
 Repository associated with the analysis used in Sanz-Puente et al., 2026, focus on seed transmission as a powerful driver of ecological specialization of plant-associated bacteria. 
 <i>This work is under review.</i> 
@@ -18,25 +18,63 @@ WGS of this study have been deposited in the NCBI Sequence Read Archive (RSA) un
 
 R (>= 4.2) with the following packages:  
 ```r
-ape             # Phylogenetic analyses
-ComplexHeatmap  # Heatmaps
-dplyr           # Data manipulation
-FSA             # Statistical analyses
-ggplot2         # Visualization
-ggtext          # Text formatting in plots
-patchwork       # Figure assembly
-phyloseq        # Microbiome analyses
-pheatmap        # Heatmaps
-purrr           # Functional programming
-RColorBrewer    # Colour palettes
-readr           # Data import
-reshape2        # Data reshaping
-rstatix         # Statistical tests
-scales          # Plot scaling utilities
-tibble          # Data frame utilities
-tidyr           # Data tidying
-tidyverse       # Data science framework
-vegan           # Ecological analyses
+adegenet         # Population genetics
+ape              # Phylogenetic analyses
+argparser        # Command-line argument parsing
+biomformat       # BIOM format data handling
+Biostrings       # Biological sequence analysis
+broom            # Tidy statistical model outputs
+BSDA             # Basic statistical analyses
+circlize         # Circular visualizations
+clusterProfiler  # Functional enrichment analysis
+ComplexHeatmap   # Heatmaps
+ComplexUpset     # UpSet plots
+dplyr            # Data manipulation
+emmeans          # Estimated marginal means and contrasts
+factoextra       # Multivariate analysis visualization
+FactoMineR       # Multivariate statistical analysis
+forcats          # Categorical data handling
+FSA              # Statistical analyses
+geodata          # Geographic data
+geosphere        # Geographic calculations
+ggraph           # Graph visualization
+ggnewscale       # Multiple fill and colour scales
+ggplot2          # Data visualization
+ggrepel          # Non-overlapping plot labels
+ggsci            # Scientific colour palettes
+ggspatial        # Spatial visualization and map scales
+ggtext           # Text formatting in plots
+ggtree           # Phylogenetic tree visualization
+grid             # Graphics infrastructure
+hierfstat        # Population genetics statistics
+igraph           # Network analysis
+KEGGREST         # KEGG database access
+lme4             # Linear mixed-effects models
+lmerTest         # Statistical tests for mixed-effects models
+mapdata          # Map datasets
+maps             # Geographic maps
+pairwiseAdonis   # Pairwise PERMANOVA
+patchwork        # Figure assembly
+pegas            # Population and evolutionary genetics
+pheatmap         # Heatmaps
+phyloseq         # Microbiome analyses
+purrr            # Functional programming
+RColorBrewer     # Colour palettes
+readr            # Data import
+readxl           # Excel data import
+reshape2         # Data reshaping
+rstatix          # Statistical tests
+scales           # Plot scaling utilities
+scatterpie       # Pie charts on maps
+sf               # Spatial data handling
+stringr          # String manipulation
+tibble           # Data frame utilities
+tidygraph        # Tidy network analysis
+tidyr            # Data tidying
+tidyverse        # Data science framework
+tools            # R tools and utilities
+vegan            # Ecological analyses
+writexl          # Excel data export
 ````
 
 #### Citation
