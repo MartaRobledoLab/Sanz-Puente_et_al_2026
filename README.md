@@ -1,5 +1,5 @@
 ## Github Repository for
-# Seed transmission bottlenecks drive the emergence of a seed-specific bacterial lineage in wheat
+# Transmission bottlenecks drive seed specialization and outbreak-like population structure in plant-associated bacteria
 **by Irene Sanz-Puente1†, Santiago Redondo-Salvo1, Natalia I. García- Tomsig1, , Arancha Peñil-Celis1, Jorge Rodríguez Grande2,3, Gijs Selten4‡, Susana Fernandes 5,6, Andreas Börner7, Alain Ocampo-Sosa2,3, Esther Menendez5,6,7, Óscar Lorenzo5,6, Ronnie de Jonge4,9, Fernando de la Cruz 1*, and Marta Robledo1**
 
 Repository associated with the analysis used in Sanz-Puente et al., 2026, focus on seed transmission as a powerful driver of ecological specialization of plant-associated bacteria. 
@@ -79,4 +79,4 @@ writexl          # Excel data export
 
 #### Citation
 If you use this repository or its contents, please cite:
-Sanz-Puente et al. (2026). Seed transmission bottlenecks drive the emergence of a seed-specific bacterial lineage in wheat.
+Sanz-Puente et al. (2026). Transmission bottlenecks drive seed specialization and outbreak-like population structure in plant-associated bacteria.
